@@ -4,44 +4,33 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.activity.viewModels
+import com.example.albummundial_pruebafinal.data.local.AppDatabase
+import com.example.albummundial_pruebafinal.data.remote.PlayerApiService
+import com.example.albummundial_pruebafinal.data.repository.StickerRepository
+import com.example.albummundial_pruebafinal.ui.screens.MainScreen
 import com.example.albummundial_pruebafinal.ui.theme.AlbumMundial_PruebaFinalTheme
+import com.example.albummundial_pruebafinal.ui.viewmodels.StickerViewModel
+import com.example.albummundial_pruebafinal.ui.viewmodels.StickerViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Inicialización manual de la arquitectura (DI simple)
+        val database = AppDatabase.getDatabase(this)
+        val apiService = PlayerApiService.create()
+        val repository = StickerRepository(database.stickerDao(), apiService)
+        
+        val viewModel: StickerViewModel by viewModels {
+            StickerViewModelFactory(repository)
+        }
+
         enableEdgeToEdge()
         setContent {
             AlbumMundial_PruebaFinalTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                MainScreen(viewModel = viewModel)
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    AlbumMundial_PruebaFinalTheme {
-        Greeting("Android")
     }
 }

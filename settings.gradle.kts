@@ -24,4 +24,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "AlbumMundial_PruebaFinal"
 include(":app")
- 
