@@ -5,11 +5,17 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface StickerDao {
+
     @Query("SELECT * FROM stickers")
     fun getAllStickers(): Flow<List<StickerEntity>>
 
+    // Láminas obtenidas
     @Query("SELECT * FROM stickers WHERE isObtained = 1")
     fun getObtainedStickers(): Flow<List<StickerEntity>>
+
+    // Láminas pendientes
+    @Query("SELECT * FROM stickers WHERE isObtained = 0")
+    fun getPendingStickers(): Flow<List<StickerEntity>>
 
     @Query("SELECT * FROM stickers WHERE quantity > 1")
     fun getRepeatedStickers(): Flow<List<StickerEntity>>

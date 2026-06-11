@@ -22,8 +22,10 @@ import com.example.albummundial_pruebafinal.ui.viewmodels.StickerViewModel
 @Composable
 fun MainScreen(viewModel: StickerViewModel) {
     var searchQuery by remember { mutableStateOf("") }
+    var mostrarObtenidas by remember { mutableStateOf(true) }
     val searchResults by viewModel.searchResults.collectAsState()
-    val stickers by viewModel.allStickers.collectAsState(initial = emptyList())
+    val obtenidas by viewModel.obtainedStickers.collectAsState(initial = emptyList())
+    val pendientes by viewModel.pendingStickers.collectAsState(initial = emptyList())
     val isLoading by viewModel.isLoading.collectAsState()
 
     Scaffold(
@@ -63,14 +65,59 @@ fun MainScreen(viewModel: StickerViewModel) {
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
+
+
             // Inventario Local
-            Text("Mis Láminas (SQLite):", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(8.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Button(
+                    onClick = { mostrarObtenidas = true }
+                ) {
+                    Text("Obtenidas")
+                }
+
+                Button(
+                    onClick = { mostrarObtenidas = false }
+                ) {
+                    Text("Pendientes")
+                }
+            }
+            Text(
+                text = if (mostrarObtenidas)
+                    "Láminas Obtenidas"
+                else
+                    "Láminas Pendientes",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(8.dp)
+            )
+
             LazyColumn {
-                items(stickers) { sticker ->
+
+                val listaActual =
+                    if (mostrarObtenidas)
+                        obtenidas
+                    else
+                        pendientes
+
+                items(listaActual) { sticker ->
+
                     StickerItem(
                         sticker = sticker,
-                        onAddRepeated = { viewModel.addRepeated(sticker.id) },
-                        onExchange = { /* Lógica de intercambio */ }
+
+                        onAddRepeated = {
+
+                            if (!sticker.isObtained) {
+                                viewModel.obtainSticker(sticker)
+                            } else {
+                                viewModel.addRepeated(sticker.id)
+                            }
+                        },
+
+                        onExchange = { }
                     )
                 }
             }
@@ -100,21 +147,70 @@ fun PlayerItem(player: Player, onRegister: () -> Unit) {
 }
 
 @Composable
-fun StickerItem(sticker: StickerEntity, onAddRepeated: () -> Unit, onExchange: () -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth().padding(4.dp), colors = CardDefaults.cardColors(
-        containerColor = if (sticker.isObtained) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface
-    )) {
-        Row(modifier = Modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text("${sticker.id} - ${sticker.name}", style = MaterialTheme.typography.bodyLarge)
-                Text("Cantidad: ${sticker.quantity}", style = MaterialTheme.typography.bodyMedium)
+fun StickerItem(
+    sticker: StickerEntity,
+    onAddRepeated: () -> Unit,
+    onExchange: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(4.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+
+                Text(
+                    text = "${sticker.id} - ${sticker.name}"
+                )
+
+                Text(
+                    text = "Equipo: ${sticker.team}"
+                )
+
+                if (sticker.isObtained) {
+                    Text(
+                        text = "Cantidad: ${sticker.quantity}"
+                    )
+                } else {
+                    Text(
+                        text = "Pendiente"
+                    )
+                }
             }
-            IconButton(onClick = onAddRepeated) {
-                Icon(Icons.Default.Add, contentDescription = "Añadir Repetida")
-            }
-            if (sticker.quantity > 1) {
-                IconButton(onClick = onExchange) {
-                    Icon(Icons.Default.SwapHoriz, contentDescription = "Intercambiar")
+
+            if (!sticker.isObtained) {
+
+                Button(
+                    onClick = onAddRepeated
+                ) {
+                    Text("OBTENER")
+                }
+
+            } else {
+
+                Button(
+                    onClick = onAddRepeated
+                ) {
+                    Text("+1 REPETIDA")
+                }
+
+                if (sticker.quantity > 1) {
+
+                    IconButton(
+                        onClick = onExchange
+                    ) {
+                        Icon(
+                            Icons.Default.SwapHoriz,
+                            contentDescription = "Intercambiar"
+                        )
+                    }
                 }
             }
         }

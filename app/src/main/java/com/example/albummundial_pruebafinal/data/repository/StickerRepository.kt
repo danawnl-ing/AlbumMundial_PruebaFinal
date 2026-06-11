@@ -10,9 +10,20 @@ class StickerRepository(
     private val stickerDao: StickerDao,
     private val apiService: PlayerApiService
 ) {
-    val allStickers: Flow<List<StickerEntity>> = stickerDao.getAllStickers()
-    val obtainedStickers: Flow<List<StickerEntity>> = stickerDao.getObtainedStickers()
-    val repeatedStickers: Flow<List<StickerEntity>> = stickerDao.getRepeatedStickers()
+
+    val allStickers: Flow<List<StickerEntity>> =
+        stickerDao.getAllStickers()
+
+    // Consulta de láminas obtenidas
+    val obtainedStickers: Flow<List<StickerEntity>> =
+        stickerDao.getObtainedStickers()
+
+    // Consulta de láminas pendientes
+    val pendingStickers: Flow<List<StickerEntity>> =
+        stickerDao.getPendingStickers()
+
+    val repeatedStickers: Flow<List<StickerEntity>> =
+        stickerDao.getRepeatedStickers()
 
     suspend fun registerSticker(sticker: StickerEntity) {
         stickerDao.insertSticker(sticker)

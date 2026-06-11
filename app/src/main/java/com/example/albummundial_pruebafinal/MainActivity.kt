@@ -21,10 +21,12 @@ class MainActivity : ComponentActivity() {
         val database = AppDatabase.getDatabase(this)
         val apiService = PlayerApiService.create()
         val repository = StickerRepository(database.stickerDao(), apiService)
-        
+
         val viewModel: StickerViewModel by viewModels {
             StickerViewModelFactory(repository)
         }
+
+        viewModel.loadInitialStickers()
 
         enableEdgeToEdge()
         setContent {
