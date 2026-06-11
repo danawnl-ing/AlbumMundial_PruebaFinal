@@ -61,6 +61,12 @@ class StickerViewModel(
         }
     }
 
+    fun useRepeatedSticker(id: String) {
+        viewModelScope.launch {
+            repository.exchangeStickers(id, "")
+        }
+    }
+
     fun exchangeSticker(
         giveId: String,
         receiveId: String
