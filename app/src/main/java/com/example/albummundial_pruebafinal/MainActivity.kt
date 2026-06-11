@@ -17,10 +17,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-<<<<<<< HEAD
-=======
         // Inicialización manual de la arquitectura (DI simple)
->>>>>>> a6c969d0d0f063bcbea9754d4cac8ccd8d6e2571
         val database = AppDatabase.getDatabase(this)
         val apiService = PlayerApiService.create()
         val repository = StickerRepository(database.stickerDao(), apiService)
