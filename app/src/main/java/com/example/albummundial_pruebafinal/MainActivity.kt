@@ -16,8 +16,7 @@ import com.example.albummundial_pruebafinal.ui.viewmodels.StickerViewModelFactor
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // Inicialización manual de la arquitectura (DI simple)
+
         val database = AppDatabase.getDatabase(this)
         val apiService = PlayerApiService.create()
         val repository = StickerRepository(database.stickerDao(), apiService)
