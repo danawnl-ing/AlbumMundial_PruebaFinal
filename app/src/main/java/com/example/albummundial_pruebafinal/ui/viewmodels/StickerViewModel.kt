@@ -233,8 +233,6 @@ class StickerViewModel(
     }
 }
 
-/* ESTA CLASE VA FUERA DEL VIEWMODEL */
-
 class StickerViewModelFactory(
     private val repository: StickerRepository
 ) : ViewModelProvider.Factory {
