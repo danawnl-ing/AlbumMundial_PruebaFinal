@@ -23,6 +23,9 @@ import com.example.albummundial_pruebafinal.ui.viewmodels.StickerViewModel
 fun MainScreen(viewModel: StickerViewModel) {
     var searchQuery by remember { mutableStateOf("") }
     var mostrarObtenidas by remember { mutableStateOf(true) }
+    var stickerToExchange by remember { mutableStateOf<StickerEntity?>(null) }
+    var showExchangeDialog by remember { mutableStateOf(false) }
+    var exchangeSearch by remember { mutableStateOf("") }
     val searchResults by viewModel.searchResults.collectAsState()
     val obtenidas by viewModel.obtainedStickers.collectAsState(initial = emptyList())
     val pendientes by viewModel.pendingStickers.collectAsState(initial = emptyList())
@@ -117,12 +120,107 @@ fun MainScreen(viewModel: StickerViewModel) {
                             }
                         },
 
-                        onExchange = { }
+                        onExchange = {
+                            stickerToExchange = sticker
+                            showExchangeDialog = true
+                        }
+
                     )
                 }
             }
         }
     }
+    if (showExchangeDialog && stickerToExchange != null) {
+
+        AlertDialog(
+
+            onDismissRequest = {
+                showExchangeDialog = false
+            },
+
+            title = {
+                Text("Selecciona la lámina recibida")
+            },
+
+            text = {
+
+                Column {
+
+                    OutlinedTextField(
+                        value = exchangeSearch,
+                        onValueChange = {
+                            exchangeSearch = it
+                        },
+                        label = {
+                            Text("Buscar jugador")
+                        }
+                    )
+
+                    Spacer(
+                        modifier = Modifier.height(8.dp)
+                    )
+
+                    Button(
+                        onClick = {
+                            viewModel.searchPlayer(exchangeSearch)
+                        }
+                    ) {
+                        Text("BUSCAR")
+                    }
+
+                    Spacer(
+                        modifier = Modifier.height(8.dp)
+                    )
+
+                    LazyColumn(
+                        modifier = Modifier.height(250.dp)
+                    ) {
+
+                        items(searchResults) { player ->
+
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(4.dp)
+                            ) {
+
+                                Column(
+                                    modifier = Modifier.padding(8.dp)
+                                ) {
+
+                                    Text(player.name)
+                                    Text(player.team)
+
+                                    Button(
+                                        onClick = {
+
+                                            viewModel.registerSticker(
+                                                player.id,
+                                                player.name,
+                                                player.team
+                                            )
+
+                                            viewModel.exchangeSticker(
+                                                stickerToExchange!!.id,
+                                                player.id
+                                            )
+
+                                            showExchangeDialog = false
+                                        }
+                                    ) {
+                                        Text("Seleccionar")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+
+            confirmButton = { }
+        )
+    }
+
 }
 
 @Composable

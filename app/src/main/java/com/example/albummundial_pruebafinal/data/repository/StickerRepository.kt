@@ -33,9 +33,14 @@ class StickerRepository(
         stickerDao.incrementQuantity(id)
     }
 
+    //MODIFICACIÓN:
     suspend fun exchangeStickers(giveId: String, receiveId: String) {
+
         stickerDao.decrementQuantity(giveId)
-        stickerDao.incrementQuantity(receiveId)
+
+        if (receiveId.isNotBlank()) {
+            stickerDao.incrementQuantity(receiveId)
+        }
     }
 
     suspend fun searchPlayer(name: String): PlayerResponse {
