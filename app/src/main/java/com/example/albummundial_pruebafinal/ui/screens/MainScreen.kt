@@ -31,6 +31,19 @@ fun MainScreen(viewModel: StickerViewModel) {
     val pendientes by viewModel.pendingStickers.collectAsState(initial = emptyList())
     val isLoading by viewModel.isLoading.collectAsState()
 
+    // Lista filtrada: si hay texto en el buscador y se está viendo "Obtenidas",
+    // filtra por nombre o equipo. Si no hay texto, muestra la lista completa.
+    val listaFiltrada = when {
+        searchQuery.isNotBlank() && mostrarObtenidas -> {
+            obtenidas.filter { sticker ->
+                sticker.name.contains(searchQuery, ignoreCase = true) ||
+                        sticker.team.contains(searchQuery, ignoreCase = true)
+            }
+        }
+        mostrarObtenidas -> obtenidas
+        else -> pendientes
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("Álbum Mundial 2026") })
@@ -68,9 +81,7 @@ fun MainScreen(viewModel: StickerViewModel) {
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-
-
-            // Inventario Local
+            // Botones Obtenidas / Pendientes
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -89,63 +100,45 @@ fun MainScreen(viewModel: StickerViewModel) {
                     Text("Pendientes")
                 }
             }
+
             Text(
-                text = if (mostrarObtenidas)
-                    "Láminas Obtenidas"
-                else
-                    "Láminas Pendientes",
+                text = if (mostrarObtenidas) "Láminas Obtenidas" else "Láminas Pendientes",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(8.dp)
             )
 
+            // Inventario Local usando listaFiltrada
             LazyColumn {
-
-                val listaActual =
-                    if (mostrarObtenidas)
-                        obtenidas
-                    else
-                        pendientes
-
-                items(listaActual) { sticker ->
-
+                items(listaFiltrada) { sticker ->
                     StickerItem(
                         sticker = sticker,
-
                         onAddRepeated = {
-
                             if (!sticker.isObtained) {
                                 viewModel.obtainSticker(sticker)
                             } else {
                                 viewModel.addRepeated(sticker.id)
                             }
                         },
-
                         onExchange = {
                             stickerToExchange = sticker
                             showExchangeDialog = true
                         }
-
                     )
                 }
             }
         }
     }
+
     if (showExchangeDialog && stickerToExchange != null) {
-
         AlertDialog(
-
             onDismissRequest = {
                 showExchangeDialog = false
             },
-
             title = {
                 Text("Selecciona la lámina recibida")
             },
-
             text = {
-
                 Column {
-
                     OutlinedTextField(
                         value = exchangeSearch,
                         onValueChange = {
@@ -156,9 +149,7 @@ fun MainScreen(viewModel: StickerViewModel) {
                         }
                     )
 
-                    Spacer(
-                        modifier = Modifier.height(8.dp)
-                    )
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     Button(
                         onClick = {
@@ -168,43 +159,34 @@ fun MainScreen(viewModel: StickerViewModel) {
                         Text("BUSCAR")
                     }
 
-                    Spacer(
-                        modifier = Modifier.height(8.dp)
-                    )
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     LazyColumn(
                         modifier = Modifier.height(250.dp)
                     ) {
-
                         items(searchResults) { player ->
-
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(4.dp)
                             ) {
-
                                 Column(
                                     modifier = Modifier.padding(8.dp)
                                 ) {
-
                                     Text(player.name)
                                     Text(player.team)
 
                                     Button(
                                         onClick = {
-
                                             viewModel.registerSticker(
                                                 player.id,
                                                 player.name,
                                                 player.team
                                             )
-
                                             viewModel.exchangeSticker(
                                                 stickerToExchange!!.id,
                                                 player.id
                                             )
-
                                             showExchangeDialog = false
                                         }
                                     ) {
@@ -216,11 +198,9 @@ fun MainScreen(viewModel: StickerViewModel) {
                     }
                 }
             },
-
             confirmButton = { }
         )
     }
-
 }
 
 @Composable
@@ -259,51 +239,30 @@ fun StickerItem(
             modifier = Modifier.padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-
-                Text(
-                    text = "${sticker.id} - ${sticker.name}"
-                )
-
-                Text(
-                    text = "Equipo: ${sticker.team}"
-                )
+                Text(text = "${sticker.id} - ${sticker.name}")
+                Text(text = "Equipo: ${sticker.team}")
 
                 if (sticker.isObtained) {
-                    Text(
-                        text = "Cantidad: ${sticker.quantity}"
-                    )
+                    Text(text = "Cantidad: ${sticker.quantity}")
                 } else {
-                    Text(
-                        text = "Pendiente"
-                    )
+                    Text(text = "Pendiente")
                 }
             }
 
             if (!sticker.isObtained) {
-
-                Button(
-                    onClick = onAddRepeated
-                ) {
+                Button(onClick = onAddRepeated) {
                     Text("OBTENER")
                 }
-
             } else {
-
-                Button(
-                    onClick = onAddRepeated
-                ) {
+                Button(onClick = onAddRepeated) {
                     Text("+1 REPETIDA")
                 }
 
                 if (sticker.quantity > 1) {
-
-                    IconButton(
-                        onClick = onExchange
-                    ) {
+                    IconButton(onClick = onExchange) {
                         Icon(
                             Icons.Default.SwapHoriz,
                             contentDescription = "Intercambiar"
